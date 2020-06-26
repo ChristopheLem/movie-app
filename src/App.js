@@ -21,17 +21,19 @@ class App extends Component {
     }, 1000);
   }
 
+  componentDidMount() {
+    apiMovie.get('/discover/movie')
+      .then(res => console.log( res ))
+      .catch(err => console.log( err ))
+  }
+  
   updateSelectedMovie = (index) => {
     this.setState({
       selectedMovie: index
     })
   }
 
-  componentDidMount() {
-    apiMovie.get('/discover/movie')
-      .then(res => console.log( res ))
-      .catch(err => console.log( err ))
-  }
+
 
   render() {
     return (
