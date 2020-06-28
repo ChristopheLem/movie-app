@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Header } from './components';
 import apiMovie, { apiMovieMap } from './conf/api.movie';
-import Films from './features/films/index';
-import Favoris from './features/favoris/components/index'
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
+import Films from './features/films';
+import Favoris from './features/favoris';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 
 class App extends Component {
 
@@ -20,36 +20,19 @@ class App extends Component {
 
   componentDidMount() {
     apiMovie.get('/discover/movie')
-      .then( response => response.data.results )
-      .then( moviesApi => {
-        const movies = moviesApi.map(apiMovieMap)
+      .then(response => response.data.results)
+      .then(moviesApi => {
+        const movies = moviesApi.map(apiMovieMap);
         this.updateMovies(movies);
       })
-      .catch( err => console.log(err));
+      .catch(err => console.log(err));
   }
 
   updateMovies = (movies) => {
+    console.log(movies)
     this.setState({
       movies,
       loaded: true
-    })
-  }
-
-  addFavori = (title) => {
-    const favoris = this.state.favoris.slice();
-    const film = this.state.movies.find( m => m.title === title );
-    favoris.push(film);
-    this.setState({
-      favoris
-    })
-  }
-
-  removeFavori = (title) => {
-    const favoris = this.state.favoris.slice();
-    const index = this.state.favoris.findIndex( f => f.title === title);
-    favoris.splice(index, 1)
-    this.setState({
-      favoris
     })
   }
 
@@ -59,34 +42,55 @@ class App extends Component {
     })
   }
 
+  addFavori = title => {
+    const film = { ...this.state.movies.find(m => m.title === title) };
+    this.setState(state => ({
+      favoris: [...this.state.favoris, film]
+    }));
+  }
+
+  removeFavori = title => {
+    const index = this.state.favoris.findIndex(f => f.title === title);
+    this.setState(state => ({
+      favoris: state.favoris.filter((_, i) => i !== index)
+    }));
+  }
+
   render() {
     return (
       <Router>
         <div className="App d-flex flex-column">
           <Header />
-          <Switch >
-            <Route path="/films" render={ (props) => {
+          <Switch>
+            <Route path="/films" render={(props) => {
               return (
-              <Films 
-                { ...props }
-                loaded={ this.state.loaded }
-                updateMovies={ this.updateMovies }
-                updateSelectedMovie={ this.updateSelectedMovie }
-                movies={ this.state.movies }
-                selectedMovie={ this.state.selectedMovie }
-                addFavori={ this.addFavori }
-                removeFavori={ this.removeFavori }
-                favoris={ this.state.favoris.map( f => f.title )}
-              />                
+                <Films
+                  {...props}
+                  loaded={this.state.loaded}
+                  updateMovies={this.updateMovies}
+                  updateSelectedMovie={this.updateSelectedMovie}
+                  movies={this.state.movies}
+                  selectedMovie={this.state.selectedMovie}
+                  addFavori={this.addFavori}
+                  removeFavori={this.removeFavori}
+                  favoris={this.state.favoris.map(f => f.title)}
+                />
               )
-            }}/>
-            <Route path="/favoris" component={Favoris} />
+            }} />
+            <Route path="/favoris" render={(props) => {
+              return (
+                <Favoris
+                  {...props}
+                  favoris={this.state.favoris}
+                  removeFavori={this.removeFavori}
+                />
+              )
+            }} />
             <Redirect to="/films" />
           </Switch>
 
         </div>
       </Router>
-
     );
   }
 }
